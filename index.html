@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6366F1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>CarbCalc – Carb Counter für T1D</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      padding-bottom: 140px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 12px 12px 12px;
+    }
+
+    .quick-add-section {
+      margin-bottom: 12px;
+    }
+
+    .quick-add-label {
+      font-size: 11px;
+      color: white;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .quick-add-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .quick-btn {
+      background: rgba(255,255,255,0.95);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      min-height: 56px;
+    }
+
+    .quick-btn:active {
+      transform: scale(0.95);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    .quick-btn-value {
+      display: block;
+      font-size: 18px;
+      font-weight: 700;
+      color: #6366F1;
+      margin-bottom: 2px;
+    }
+
+    @media (max-width: 600px) {
+      .quick-btn {
+        min-height: 60px;
+        padding: 12px 8px;
+        font-size: 13px;
+      }
+
+      .quick-btn-value {
+        font-size: 20px;
+      }
+    }
+
+    .rows-container {
+      background: white;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 80px 100px 1fr 80px 40px 40px;
+      gap: 8px;
+      margin-bottom: 10px;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .row .weight {
+      grid-column: 1;
+    }
+
+    .row .type-select {
+      grid-column: 2;
+    }
+
+    .row .value {
+      grid-column: 3;
+    }
+
+    .row .kh-value {
+      grid-column: 4;
+    }
+
+    .row-actions {
+      grid-column: 5 / 7;
+    }
+
+    /* Mobile responsive layout */
+    @media (max-width: 600px) {
+      body {
+        padding-bottom: 140px;
+      }
+
+      .container {
+        padding: 12px 12px 12px;
+      }
+
+      .row {
+        grid-template-columns: 1fr 50px 60px;
+        grid-template-rows: auto auto;
+        gap: 4px;
+        padding: 7px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        margin-bottom: 6px;
+        border-bottom: none;
+      }
+
+      .row:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Zeile 1: Gewicht + KH-Wert */
+      .row .weight {
+        grid-column: 1 / 3;
+        grid-row: 1;
+        font-size: 15px;
+        min-height: 38px;
+        padding: 5px 8px;
+      }
+
+      .row .kh-value {
+        grid-column: 3;
+        grid-row: 1;
+        font-size: 20px;
+        font-weight: 800;
+        text-align: center;
+        color: #6366F1;
+        background: white;
+        border-radius: 6px;
+        padding: 8px 4px;
+        box-shadow: 0 1px 3px rgba(99, 102, 241, 0.15);
+        align-self: center;
+      }
+
+      /* Zeile 2: Typ + Wert + Buttons */
+      .row .type-select {
+        grid-column: 1;
+        grid-row: 2;
+        min-height: 38px;
+        padding: 5px 8px;
+        font-size: 12px;
+      }
+
+      .row .value {
+        grid-column: 2;
+        grid-row: 2;
+        min-height: 38px;
+        padding: 5px 6px;
+        font-size: 13px;
+        text-align: center;
+      }
+
+      .row-actions {
+        grid-column: 3;
+        grid-row: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .row .star-btn,
+      .row .delete-btn {
+        min-height: 18px;
+        font-size: 14px;
+        background: white;
+        border: 1.5px solid #e0e0e0;
+        padding: 0;
+      }
+
+      .row .star-btn:active {
+        background: #fff3cd;
+      }
+
+      .row .delete-btn:active {
+        background: #ffe4e6;
+      }
+    }
+
+
+    .star-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px 6px;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.2s;
+      opacity: 0.6;
+    }
+
+    .star-btn:hover {
+      opacity: 1;
+      background: #fff3cd;
+    }
+
+    .star-btn:active {
+      transform: scale(0.9);
+    }
+
+    input, select {
+      padding: 12px;
+      font-size: 16px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      width: 100%;
+      min-height: 48px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #6366F1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .weight-input {
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .food-inputs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .food-inputs select {
+      flex: 1;
+    }
+
+    .food-inputs input {
+      flex: 1;
+      min-width: 60px;
+    }
+
+    .fav-select {
+      width: 100%;
+    }
+
+    .kh-value {
+      text-align: right;
+      font-weight: 700;
+      font-size: 18px;
+      color: #6366F1;
+      grid-column: 3;
+    }
+
+    .row-actions {
+      grid-column: 4 / 6;
+      display: flex;
+      gap: 4px;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      padding: 0;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .delete-btn:hover {
+      background: #ffe4e6;
+    }
+
+    .delete-btn:active {
+      background: #ffc2c7;
+    }
+
+    .action-buttons {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 16px;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+    }
+
+    .total-display-bottom {
+      text-align: center;
+      padding: 8px 0 12px;
+      border-bottom: 1px solid #f0f0f0;
+      margin-bottom: 12px;
+    }
+
+    .total-display-bottom .total-label {
+      font-size: 12px;
+      color: #666;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-right: 8px;
+    }
+
+    .total-display-bottom .total-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: #6366F1;
+    }
+
+    .total-display-bottom .total-unit {
+      font-size: 14px;
+      color: #999;
+      margin-left: 4px;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .add-row-btn, .clear-btn, .save-btn {
+      padding: 14px 16px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      min-height: 52px;
+    }
+
+    @media (max-width: 600px) {
+      .add-row-btn, .clear-btn {
+        font-size: 15px;
+        padding: 16px;
+      }
+    }
+
+    .add-row-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      flex: 1;
+    }
+
+    .add-row-btn:active {
+      transform: scale(0.98);
+    }
+
+    .clear-btn {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .clear-btn:active {
+      background: #e0e0e0;
+    }
+
+    .save-btn {
+      background: #e8f5e9;
+      color: #2e7d32;
+      font-weight: 700;
+    }
+
+    .save-btn:active {
+      background: #c8e6c9;
+    }
+
+    .manage-favorites-btn {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      background: white;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #666;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .manage-favorites-btn:active {
+      background: #f5f5f5;
+    }
+
+    .favorites-section {
+      margin-top: 16px;
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-weight: 700;
+      color: #333;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .section-close-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px 8px;
+      color: #999;
+      transition: color 0.2s;
+    }
+
+    .section-close-btn:hover {
+      color: #333;
+    }
+
+    .favorite-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .favorite-item:last-child {
+      border-bottom: none;
+    }
+
+    .favorite-item-info {
+      flex: 1;
+    }
+
+    .favorite-item-name {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 2px;
+    }
+
+    .favorite-item-details {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .favorite-delete-btn {
+      background: #ffe4e6;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .favorite-delete-btn:active {
+      background: #ffc2c7;
+    }
+
+    .history-section {
+      margin-top: 16px;
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .history-title {
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #333;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 14px;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-item-name {
+      color: #666;
+    }
+
+    .history-item-carbs {
+      font-weight: 700;
+      color: #6366F1;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 16px;
+      font-family: inherit;
+    }
+
+    .modal-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .modal-btn {
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal-btn-cancel {
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .modal-btn-save {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="quick-add-section">
+    <label class="quick-add-label">⚡ Schnell hinzufügen</label>
+    <div class="quick-add-buttons">
+      <!-- Dynamisch generiert via renderQuickPicks() -->
+    </div>
+  </div>
+
+  <div class="rows-container">
+    <div id="rows"></div>
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <div class="empty-state-icon">🍽️</div>
+      <p>Keine Einträge. Tippen Sie auf "Hinzufügen", um zu starten.</p>
+    </div>
+  </div>
+
+  <div class="favorites-section" id="favoritesSection" style="display: none;">
+    <div class="section-header">
+      <div class="section-title">⭐ Favoriten verwalten</div>
+      <button class="section-close-btn" onclick="closeFavoritesManager()">✕</button>
+    </div>
+    <div id="favoritesList"></div>
+  </div>
+
+  <div class="history-section" id="historySection" style="display: none;">
+    <div class="history-title">📊 Letzte Einträge</div>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<div class="action-buttons">
+  <div class="total-display-bottom">
+    <span class="total-label">Gesamt</span>
+    <span class="total-value" id="totalKH">0.0</span>
+    <span class="total-unit">g</span>
+  </div>
+  <div class="button-row">
+    <button class="clear-btn" onclick="clearAll()">Löschen</button>
+    <button class="add-row-btn" onclick="addRow()">+ Hinzufügen</button>
+  </div>
+  <button class="manage-favorites-btn" onclick="openFavoritesManager()">⭐ Favoriten</button>
+</div>
+
+<div class="modal" id="favModal">
+  <div class="modal-content">
+    <div class="modal-title">Zu Favoriten speichern</div>
+    <input type="text" class="modal-input" id="favName" placeholder="Name (z.B. 'Mein Brot')">
+    <div class="modal-buttons">
+      <button class="modal-btn modal-btn-cancel" onclick="closeFavModal()">Abbrechen</button>
+      <button class="modal-btn modal-btn-save" onclick="saveFavoriteName()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const rowsEl = document.getElementById("rows");
+  const totalEl = document.getElementById("totalKH");
+  const emptyState = document.getElementById("emptyState");
+  const historySection = document.getElementById("historySection");
+  const favModal = document.getElementById("favModal");
+  const favNameInput = document.getElementById("favName");
+  let currentFavRow = null;
+
+  // Offline support
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+
+  function loadFavorites() {
+    return JSON.parse(localStorage.getItem("kh_favorites") || "[]");
+  }
+
+  function saveFavorite(fav) {
+    const favorites = loadFavorites();
+    favorites.push(fav);
+    localStorage.setItem("kh_favorites", JSON.stringify(favorites));
+  }
+
+  // Migration: Remove carbs from old favorites (run once)
+  function migrateFavorites() {
+    const favorites = loadFavorites();
+    let migrated = false;
+
+    const cleanedFavorites = favorites.map(fav => {
+      if (fav.hasOwnProperty('carbs')) {
+        migrated = true;
+        // Remove carbs property
+        const { carbs, ...cleanFav } = fav;
+        return cleanFav;
+      }
+      return fav;
+    });
+
+    if (migrated) {
+      localStorage.setItem("kh_favorites", JSON.stringify(cleanedFavorites));
+      console.log("Favoriten wurden migriert: carbs entfernt");
+    }
+  }
+
+  function loadHistory() {
+    return JSON.parse(localStorage.getItem("kh_history") || "[]");
+  }
+
+  // === USAGE TRACKING ===
+  function loadFavoriteUsage() {
+    return JSON.parse(localStorage.getItem("kh_favorite_usage") || "[]");
+  }
+
+  function saveFavoriteUsage(usage) {
+    localStorage.setItem("kh_favorite_usage", JSON.stringify(usage));
+  }
+
+  function trackFavoriteUsage(favName, weight) {
+    if (!favName || weight <= 0) return;
+
+    const usage = loadFavoriteUsage();
+    let favUsage = usage.find(u => u.favName === favName);
+
+    if (!favUsage) {
+      favUsage = { favName, usages: [], avgWeight: 0 };
+      usage.push(favUsage);
+    }
+
+    // Add new usage
+    favUsage.usages.push({ weight, timestamp: Date.now() });
+
+    // Keep only last 10 usages per favorite
+    if (favUsage.usages.length > 10) {
+      favUsage.usages.shift();
+    }
+
+    // Calculate average weight
+    const totalWeight = favUsage.usages.reduce((sum, u) => sum + u.weight, 0);
+    favUsage.avgWeight = Math.round(totalWeight / favUsage.usages.length);
+
+    saveFavoriteUsage(usage);
+  }
+
+  function getTopFavorites(limit = 4) {
+    const favorites = loadFavorites();
+    const usage = loadFavoriteUsage();
+
+    // Match favorites with their usage data
+    const favWithUsage = favorites.map(fav => {
+      const usageData = usage.find(u => u.favName === fav.name);
+      return {
+        ...fav,
+        usageCount: usageData ? usageData.usages.length : 0,
+        avgWeight: usageData ? usageData.avgWeight : 0
+      };
+    });
+
+    // Sort by usage count and return top N
+    return favWithUsage
+      .filter(f => f.usageCount > 0)
+      .sort((a, b) => b.usageCount - a.usageCount)
+      .slice(0, limit);
+  }
+
+  function addToHistory(items) {
+    const history = loadHistory();
+    const total = items.reduce((sum, item) => sum + item.carbs, 0);
+    history.unshift({
+      date: new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+      items: items,
+      total: total
+    });
+    if (history.length > 20) history.pop();
+    localStorage.setItem("kh_history", JSON.stringify(history));
+  }
+
+  function updateHistory() {
+    const history = loadHistory();
+    if (history.length === 0) {
+      historySection.style.display = "none";
+      return;
+    }
+    historySection.style.display = "block";
+    const historyList = document.getElementById("historyList");
+    historyList.innerHTML = history.slice(0, 5).map(entry => `
+      <div class="history-item">
+        <div>
+          <div class="history-item-name">${entry.items.map(i => i.name).join(", ")}</div>
+          <div style="font-size: 12px; color: #999;">${entry.date}</div>
+        </div>
+        <div class="history-item-carbs">${entry.total.toFixed(1)}g</div>
+      </div>
+    `).join("");
+  }
+
+  // === FAVORITES MANAGEMENT ===
+  function openFavoritesManager() {
+    const favoritesSection = document.getElementById("favoritesSection");
+    favoritesSection.style.display = "block";
+    renderFavoritesList();
+    favoritesSection.scrollIntoView({ behavior: "smooth" });
+  }
+
+  function closeFavoritesManager() {
+    document.getElementById("favoritesSection").style.display = "none";
+  }
+
+  function renderFavoritesList() {
+    const favorites = loadFavorites();
+    const favoritesList = document.getElementById("favoritesList");
+
+    if (favorites.length === 0) {
+      favoritesList.innerHTML = `
+        <div style="text-align: center; padding: 20px; color: #999;">
+          Keine Favoriten vorhanden
+        </div>
+      `;
+      return;
+    }
+
+    favoritesList.innerHTML = favorites.map((fav, index) => {
+      const label = fav.type === "KH100" ? `${fav.value}g/100g` :
+                    fav.type === "FAKTOR" ? `Faktor ×${fav.value}` :
+                    `Teiler ÷${fav.value}`;
+      return `
+        <div class="favorite-item">
+          <div class="favorite-item-info">
+            <div class="favorite-item-name">${fav.name}</div>
+            <div class="favorite-item-details">${label}</div>
+          </div>
+          <button class="favorite-delete-btn" onclick="deleteFavorite(${index})">🗑️ Löschen</button>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function deleteFavorite(index) {
+    if (!confirm("Favorit wirklich löschen?")) return;
+
+    const favorites = loadFavorites();
+    const deletedFav = favorites[index];
+    favorites.splice(index, 1);
+    localStorage.setItem("kh_favorites", JSON.stringify(favorites));
+
+    // Also remove from usage tracking
+    const usage = loadFavoriteUsage();
+    const updatedUsage = usage.filter(u => u.favName !== deletedFav.name);
+    saveFavoriteUsage(updatedUsage);
+
+    renderFavoritesList();
+    refreshFavorites();
+    renderQuickPicks();
+  }
+
+  // === CALCULATION LAYER ===
+  function calculateCarbs(weight, type, value) {
+    let factor = 0;
+    if (type === "FAKTOR") factor = value;
+    if (type === "TEILER" && value !== 0) factor = 1 / value;
+    if (type === "KH100") factor = value / 100;
+    return weight * factor;
+  }
+
+  // === UI RENDERING ===
+  function renderQuickPicks() {
+    const topFavorites = getTopFavorites(4);
+    const quickAddSection = document.querySelector(".quick-add-section");
+    const quickAddButtons = document.querySelector(".quick-add-buttons");
+
+    if (topFavorites.length === 0) {
+      quickAddSection.style.display = "none";
+      return;
+    }
+
+    quickAddSection.style.display = "block";
+    quickAddButtons.innerHTML = topFavorites.map(fav => {
+      const avgCarbs = calculateCarbs(fav.avgWeight, fav.type, fav.value);
+      return `
+        <button class="quick-btn" onclick="quickAddFood('${fav.name}', ${fav.avgWeight}, '${fav.type}', ${fav.value})">
+          <span class="quick-btn-value">${avgCarbs.toFixed(0)}g</span>
+          ${fav.name}
+        </button>
+      `;
+    }).join("");
+  }
+
+  function combinedTypeOptions() {
+    const favorites = loadFavorites();
+    let options = `
+      <option value="KH100">KH/100g</option>
+      <option value="FAKTOR">Faktor</option>
+      <option value="TEILER">Teiler</option>
+    `;
+
+    if (favorites.length > 0) {
+      options += `<optgroup label="📌 Favoriten">`;
+      favorites.forEach((f, i) => {
+        const label = f.type === "KH100" ? `${f.value}g/100g` :
+                      f.type === "FAKTOR" ? `×${f.value}` :
+                      `÷${f.value}`;
+        options += `<option value="fav:${i}">${f.name} (${label})</option>`;
+      });
+      options += `</optgroup>`;
+    }
+
+    return options;
+  }
+
+  function quickAddFood(name, weight, type, khValue) {
+    const carbs = calculateCarbs(weight, type, khValue);
+    trackFavoriteUsage(name, weight);
+    addRowWithFavorite(name, weight, 0, { name, type, value: khValue, carbs: carbs });
+    renderQuickPicks(); // Update quick picks after usage
+  }
+
+  function addRowWithFavorite(displayName, weight, favIndex, favData) {
+    const row = document.createElement("div");
+    row.className = "row";
+    
+    if (favData) {
+      row.dataset.type = favData.type;
+      row.dataset.value = favData.value;
+      row.dataset.name = favData.name;
+      row.dataset.carbs = favData.carbs;
+    }
+
+    row.innerHTML = `
+      <input type="number" placeholder="Gramm" step="0.1" class="weight" value="${weight}">
+      <select class="type-select">${combinedTypeOptions()}</select>
+      <input type="number" step="0.01" class="value" placeholder="Wert" ${favData ? `value="${favData.value}"` : ""}>
+      <div class="kh-value">0.0</div>
+      <div class="row-actions">
+        <button class="star-btn" onclick="saveFavFromRow(this)" title="Als Favorit speichern">⭐</button>
+        <button class="delete-btn" onclick="deleteRow(this)">🗑️</button>
+      </div>
+    `;
+
+    const typeSelect = row.querySelector(".type-select");
+    const valueInput = row.querySelector(".value");
+
+    // Set initial values if favData exists
+    if (favData) {
+      typeSelect.value = favData.type;
+      valueInput.value = favData.value;
+      row.dataset.type = favData.type;
+      row.dataset.value = favData.value;
+      row.dataset.name = favData.name;
+    }
+
+    typeSelect.addEventListener("change", e => {
+      const selectedValue = e.target.value;
+
+      if (selectedValue.startsWith("fav:")) {
+        // Favorite selected
+        const favIndex = parseInt(selectedValue.split(":")[1]);
+        const favorites = loadFavorites();
+        const fav = favorites[favIndex];
+
+        if (fav) {
+          valueInput.value = fav.value;
+          row.dataset.type = fav.type;
+          row.dataset.value = fav.value;
+          row.dataset.name = fav.name;
+          calculate();
+        }
+      } else {
+        // Regular type selected (KH100, FAKTOR, TEILER)
+        row.dataset.type = selectedValue;
+        row.dataset.name = "";
+        calculate();
+      }
+    });
+
+    valueInput.addEventListener("input", () => {
+      row.dataset.value = valueInput.value;
+      calculate();
+    });
+
+    row.querySelector(".weight").addEventListener("input", calculate);
+
+    // Track favorite usage when weight changes
+    const weightInput = row.querySelector(".weight");
+    let lastTrackedWeight = 0;
+    weightInput.addEventListener("change", () => {
+      const weight = parseFloat(weightInput.value) || 0;
+      const favName = row.dataset.name;
+
+      // Track only if favorite is active and weight changed significantly
+      if (favName && weight > 0 && Math.abs(weight - lastTrackedWeight) > 0.1) {
+        trackFavoriteUsage(favName, weight);
+        lastTrackedWeight = weight;
+        renderQuickPicks();
+      }
+    });
+
+    rowsEl.appendChild(row);
+    calculate();
+  }
+
+  function addRow() {
+    addRowWithFavorite("", 0);
+  }
+
+  function deleteRow(btn) {
+    const row = btn.closest(".row");
+    row.remove();
+    calculate();
+  }
+
+  function saveFavFromRow(btn) {
+    const row = btn.closest(".row");
+    const weight = parseFloat(row.querySelector(".weight").value) || 0;
+    const type = row.dataset.type || row.querySelector(".type-select").value;
+    const value = parseFloat(row.dataset.value || row.querySelector(".value").value) || 0;
+    const name = row.dataset.name || "";
+
+    if (!type || !value) {
+      alert("Bitte zuerst Typ und Wert eingeben.");
+      return;
+    }
+
+    currentFavRow = row;
+    favNameInput.value = name;
+    favNameInput.focus();
+    favModal.classList.add("active");
+  }
+
+  function closeFavModal() {
+    favModal.classList.remove("active");
+    currentFavRow = null;
+  }
+
+  function saveFavoriteName() {
+    const name = favNameInput.value.trim();
+    if (!name || !currentFavRow) return;
+
+    const type = currentFavRow.dataset.type || currentFavRow.querySelector(".type-select").value;
+    const value = parseFloat(currentFavRow.dataset.value || currentFavRow.querySelector(".value").value) || 0;
+
+    if (!type || !value) {
+      alert("Bitte zuerst Typ und Wert eingeben.");
+      return;
+    }
+
+    // Save favorite without carbs (carbs depend on weight which varies)
+    saveFavorite({ name, type, value });
+    refreshFavorites();
+    closeFavModal();
+  }
+
+  function refreshFavorites() {
+    document.querySelectorAll(".type-select").forEach(select => {
+      const currentValue = select.value;
+      select.innerHTML = combinedTypeOptions();
+      // Try to restore previous selection
+      if (currentValue && select.querySelector(`option[value="${currentValue}"]`)) {
+        select.value = currentValue;
+      }
+    });
+  }
+
+  function calculate() {
+    let total = 0;
+    const items = [];
+
+    document.querySelectorAll(".row").forEach(row => {
+      const weight = parseFloat(row.querySelector(".weight").value) || 0;
+      const type = row.dataset.type || row.querySelector(".type-select").value;
+      const value = parseFloat(row.dataset.value || row.querySelector(".value").value) || 0;
+
+      const kh = calculateCarbs(weight, type, value);
+      row.querySelector(".kh-value").textContent = kh.toFixed(1);
+      total += kh;
+
+      if (weight > 0 && value > 0) {
+        const foodName = row.dataset.name || "Lebensmittel";
+        items.push({ name: foodName, carbs: kh });
+      }
+    });
+
+    totalEl.textContent = total.toFixed(1);
+    emptyState.style.display = document.querySelectorAll(".row").length === 0 ? "block" : "none";
+  }
+
+  function clearAll() {
+    if (confirm("Alle Einträge löschen?")) {
+      const items = [];
+      document.querySelectorAll(".row").forEach(row => {
+        const weight = parseFloat(row.querySelector(".weight").value) || 0;
+        const value = parseFloat(row.querySelector(".value").value) || 0;
+        if (weight > 0 && value > 0) {
+          const type = row.querySelector(".type-select").value;
+          const carbs = calculateCarbs(weight, type, value);
+          items.push({ name: row.dataset.name || "Lebensmittel", carbs: carbs });
+        }
+      });
+      if (items.length > 0) {
+        addToHistory(items);
+      }
+      rowsEl.innerHTML = "";
+      calculate();
+      updateHistory();
+    }
+  }
+
+  // Keyboard enter key
+  document.addEventListener("keypress", e => {
+    if (e.key === "Enter" && favModal.classList.contains("active")) {
+      saveFavoriteName();
+    }
+  });
+
+  // Modal close on background click
+  favModal.addEventListener("click", e => {
+    if (e.target === favModal) closeFavModal();
+  });
+
+  // Initialize app
+  migrateFavorites();
+  renderQuickPicks();
+  updateHistory();
+  emptyState.style.display = "block";
+</script>
+</body>
+</html>
