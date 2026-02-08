@@ -7,7 +7,7 @@
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#6366F1",
-  "description": "Schneller und schöner Kohlenhydrat-Rechner für Menschen mit Typ 1 Diabetes",
+  "description": "Kohlenhydrat-Rechner für Menschen mit Typ 1 Diabetes",
   "categories": ["health", "productivity"],
   "icons": [
     {

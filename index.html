@@ -140,7 +140,7 @@
       }
 
       .row {
-        grid-template-columns: 1fr 50px 60px;
+        grid-template-columns: 1fr 50px 50px 50px;
         grid-template-rows: auto auto;
         gap: 4px;
         padding: 7px;
@@ -164,9 +164,9 @@
       }
 
       .row .kh-value {
-        grid-column: 3;
+        grid-column: 3 / 5;
         grid-row: 1;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 800;
         text-align: center;
         color: #6366F1;
@@ -196,17 +196,17 @@
       }
 
       .row-actions {
-        grid-column: 3;
+        grid-column: 3 / 5;
         grid-row: 2;
         display: flex;
-        flex-direction: column;
-        gap: 2px;
+        gap: 4px;
       }
 
       .row .star-btn,
       .row .delete-btn {
-        min-height: 18px;
-        font-size: 14px;
+        flex: 1;
+        min-height: 38px;
+        font-size: 16px;
         background: white;
         border: 1.5px solid #e0e0e0;
         padding: 0;
@@ -955,10 +955,10 @@
     }
 
     row.innerHTML = `
-      <input type="number" placeholder="Gramm" step="0.1" class="weight" value="${weight}">
+      <input type="number" placeholder="Gramm" step="0.1" class="weight" ${weight > 0 ? `value="${weight}"` : ""}>
       <select class="type-select">${combinedTypeOptions()}</select>
       <input type="number" step="0.01" class="value" placeholder="Wert" ${favData ? `value="${favData.value}"` : ""}>
-      <div class="kh-value">0.0</div>
+      <div class="kh-value">0.0g</div>
       <div class="row-actions">
         <button class="star-btn" onclick="saveFavFromRow(this)" title="Als Favorit speichern">⭐</button>
         <button class="delete-btn" onclick="deleteRow(this)">🗑️</button>
@@ -1099,7 +1099,7 @@
       const value = parseFloat(row.dataset.value || row.querySelector(".value").value) || 0;
 
       const kh = calculateCarbs(weight, type, value);
-      row.querySelector(".kh-value").textContent = kh.toFixed(1);
+      row.querySelector(".kh-value").textContent = kh.toFixed(1) + "g";
       total += kh;
 
       if (weight > 0 && value > 0) {
